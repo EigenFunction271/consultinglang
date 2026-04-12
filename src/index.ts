@@ -1,5 +1,6 @@
 export { lex, getMeaningfulLines } from "./lexer.js";
 export { parse } from "./parser.js";
+export { analyze } from "./analyzer.js";
 export { transpile } from "./transpiler.js";
 export { compile, run } from "./runtime.js";
 export type * from "./ast.js";

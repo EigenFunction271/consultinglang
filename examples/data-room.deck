@@ -1,0 +1,26 @@
+kick off
+
+  synergize double with n
+    take this offline n * 2
+  end of day
+
+  synergize is material with n
+    take this offline n > 5
+  end of day
+
+  align on numbers is a key deliverable of pipeline 3, 1, 4, 2
+  stakeholder 1 of numbers is a key deliverable of 6
+  remove from pipeline numbers 2
+
+  align on doubled is a key deliverable of map pipeline numbers with double
+  align on material is a key deliverable of filter pipeline doubled with is material
+  align on sorted is a key deliverable of sort pipeline material
+
+  align on memo is a key deliverable of brief owner: "Ada", "status": "greenlit"
+  briefing "status" of memo is a key deliverable of "socialised"
+
+  socialise stakeholder 0 of sorted
+  socialise briefing "owner" of memo
+  socialise briefing "status" of memo
+
+close the loop

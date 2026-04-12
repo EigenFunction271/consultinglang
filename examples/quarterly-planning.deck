@@ -1,0 +1,19 @@
+kick off
+
+  align on quarter is a key deliverable of 4
+  align on ready is a key deliverable of deprioritised
+  align on cycles is a key deliverable of 0
+
+  circle back until ready
+    cycles is a key deliverable of cycles + 1
+
+    going forward if cycles == quarter
+      ready is a key deliverable of greenlit
+    that said
+      socialise "Circling back."
+    end of day
+  end of day
+
+  socialise "Aligned for next quarter."
+
+close the loop

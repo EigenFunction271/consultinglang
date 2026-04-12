@@ -1,4 +1,4 @@
-import type { BinaryExpression, Expression } from "./ast.js";
+import type { BinaryExpression, Expression, ObjectProperty } from "./ast.js";
 import { syntaxError } from "./errors.js";
 
 interface ExprToken {
@@ -148,7 +148,7 @@ export function splitTopLevel(input: string, separator = ","): string[] {
   return parts;
 }
 
-function findTopLevelPhrase(input: string, phrase: string): number {
+export function findTopLevelPhrase(input: string, phrase: string): number {
   let depth = 0;
   let inString = false;
   let escaped = false;
@@ -178,6 +178,71 @@ function findTopLevelPhrase(input: string, phrase: string): number {
   return -1;
 }
 
+function findTopLevelChar(input: string, target: string): number {
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let i = 0; i < input.length; i += 1) {
+    const char = input[i];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (char === "\\") {
+      escaped = true;
+      continue;
+    }
+    if (char === "\"") {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+    if (char === "(") depth += 1;
+    if (char === ")") depth -= 1;
+    if (depth === 0 && char === target) {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
+function parseObjectKey(input: string, line: number): string {
+  const trimmed = input.trim();
+  if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(trimmed)) {
+    return trimmed;
+  }
+  if (trimmed.startsWith("\"")) {
+    try {
+      const parsed = JSON.parse(trimmed) as unknown;
+      if (typeof parsed === "string") {
+        return parsed;
+      }
+    } catch {
+      throw syntaxError(line);
+    }
+  }
+  throw syntaxError(line);
+}
+
+function parseObjectProperties(input: string, line: number): ObjectProperty[] {
+  if (!input.trim()) {
+    return [];
+  }
+
+  return splitTopLevel(input).map((part) => {
+    const colon = findTopLevelChar(part, ":");
+    if (colon === -1) {
+      throw syntaxError(line);
+    }
+    return {
+      key: parseObjectKey(part.slice(0, colon), line),
+      value: parseExpression(part.slice(colon + 1), line),
+    };
+  });
+}
+
 class ExpressionParser {
   private current = 0;
 
@@ -205,6 +270,7 @@ class ExpressionParser {
       const right = this.parsePrecedence(tokenPrecedence + 1);
       left = {
         kind: "BinaryExpression",
+        line: token.line,
         operator: operator as BinaryExpression["operator"],
         left,
         right,
@@ -218,38 +284,39 @@ class ExpressionParser {
     const token = this.advance();
 
     if (token.type === "number") {
-      return { kind: "LiteralExpression", value: Number(token.value) };
+      return { kind: "LiteralExpression", line: token.line, value: Number(token.value) };
     }
 
     if (token.type === "string") {
-      return { kind: "LiteralExpression", value: JSON.parse(token.value) as string };
+      return { kind: "LiteralExpression", line: token.line, value: JSON.parse(token.value) as string };
     }
 
     if (token.type === "identifier") {
-      return { kind: "IdentifierExpression", name: token.value };
+      return { kind: "IdentifierExpression", line: token.line, name: token.value };
     }
 
     if (token.value === "true") {
-      return { kind: "LiteralExpression", value: true };
+      return { kind: "LiteralExpression", line: token.line, value: true };
     }
 
     if (token.value === "false") {
-      return { kind: "LiteralExpression", value: false };
+      return { kind: "LiteralExpression", line: token.line, value: false };
     }
 
     if (token.value === "null") {
-      return { kind: "LiteralExpression", value: null };
+      return { kind: "LiteralExpression", line: token.line, value: null };
     }
 
     if (token.value === "!") {
-      return { kind: "UnaryExpression", operator: "!", argument: this.parsePrecedence(7) };
+      return { kind: "UnaryExpression", line: token.line, operator: "!", argument: this.parsePrecedence(7) };
     }
 
     if (token.value === "-") {
       return {
         kind: "BinaryExpression",
+        line: token.line,
         operator: "-",
-        left: { kind: "LiteralExpression", value: 0 },
+        left: { kind: "LiteralExpression", line: token.line, value: 0 },
         right: this.parsePrecedence(7),
       };
     }
@@ -315,6 +382,7 @@ export function parseExpression(input: string, line: number): Expression {
     const argText = rest.slice(withIndex + " with ".length).trim();
     return {
       kind: "CallExpression",
+      line,
       callee,
       args: argText ? splitTopLevel(argText).map((part) => parseExpression(part, line)) : [],
     };
@@ -324,14 +392,74 @@ export function parseExpression(input: string, line: number): Expression {
     const argText = trimmed.slice("pipeline ".length).trim();
     return {
       kind: "ArrayLiteralExpression",
+      line,
       items: argText ? splitTopLevel(argText).map((part) => parseExpression(part, line)) : [],
+    };
+  }
+
+  if (trimmed.startsWith("brief ")) {
+    return {
+      kind: "ObjectLiteralExpression",
+      line,
+      properties: parseObjectProperties(trimmed.slice("brief ".length), line),
+    };
+  }
+
+  if (trimmed.startsWith("map pipeline ")) {
+    const rest = trimmed.slice("map pipeline ".length);
+    const withIndex = findTopLevelPhrase(rest, " with ");
+    if (withIndex === -1) {
+      throw syntaxError(line);
+    }
+    return {
+      kind: "ArrayMapExpression",
+      line,
+      array: parseExpression(rest.slice(0, withIndex), line),
+      mapper: rest.slice(withIndex + " with ".length).trim(),
+    };
+  }
+
+  if (trimmed.startsWith("filter pipeline ")) {
+    const rest = trimmed.slice("filter pipeline ".length);
+    const withIndex = findTopLevelPhrase(rest, " with ");
+    if (withIndex === -1) {
+      throw syntaxError(line);
+    }
+    return {
+      kind: "ArrayFilterExpression",
+      line,
+      array: parseExpression(rest.slice(0, withIndex), line),
+      predicate: rest.slice(withIndex + " with ".length).trim(),
+    };
+  }
+
+  if (trimmed.startsWith("sort pipeline ")) {
+    return {
+      kind: "ArraySortExpression",
+      line,
+      array: parseExpression(trimmed.slice("sort pipeline ".length), line),
     };
   }
 
   if (trimmed.startsWith("headcount of ")) {
     return {
       kind: "ArrayLengthExpression",
+      line,
       array: parseExpression(trimmed.slice("headcount of ".length), line),
+    };
+  }
+
+  if (trimmed.startsWith("briefing ")) {
+    const rest = trimmed.slice("briefing ".length);
+    const ofIndex = findTopLevelPhrase(rest, " of ");
+    if (ofIndex === -1) {
+      throw syntaxError(line);
+    }
+    return {
+      kind: "ObjectAccessExpression",
+      line,
+      key: parseExpression(rest.slice(0, ofIndex), line),
+      object: parseExpression(rest.slice(ofIndex + " of ".length), line),
     };
   }
 
@@ -343,6 +471,7 @@ export function parseExpression(input: string, line: number): Expression {
     }
     return {
       kind: "ArrayIndexExpression",
+      line,
       index: parseExpression(rest.slice(0, ofIndex), line),
       array: parseExpression(rest.slice(ofIndex + " of ".length), line),
     };

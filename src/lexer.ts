@@ -32,6 +32,12 @@ const keywordPhrases = [
   "leverage",
   "pipeline",
   "headcount of",
+  "remove from pipeline",
+  "map pipeline",
+  "filter pipeline",
+  "sort pipeline",
+  "briefing",
+  "brief",
   "stakeholder",
   "greenlit",
   "deprioritised",
@@ -149,7 +155,7 @@ export function lex(source: string): Token[] {
         continue;
       }
 
-      if (/^[(),+\-*/%<>]/.test(rest)) {
+      if (/^[(),:+\-*/%<>]/.test(rest)) {
         tokens.push({
           type: "punctuation",
           value: rest[0],

@@ -1,7 +1,12 @@
 import type {
   ArrayIndexExpression,
+  ArrayFilterExpression,
   ArrayLengthExpression,
   ArrayLiteralExpression,
+  ArrayMapExpression,
+  ArrayRemoveStatement,
+  ArraySetStatement,
+  ArraySortExpression,
   ArrayPushStatement,
   AssignmentStatement,
   BinaryExpression,
@@ -13,6 +18,9 @@ import type {
   IdentifierExpression,
   IfStatement,
   LiteralExpression,
+  ObjectAccessExpression,
+  ObjectLiteralExpression,
+  ObjectSetStatement,
   PrintStatement,
   Program,
   ReturnStatement,
@@ -75,6 +83,12 @@ class Emitter {
         return this.whileStatement(statement);
       case "ArrayPushStatement":
         return this.arrayPush(statement);
+      case "ArraySetStatement":
+        return this.arraySet(statement);
+      case "ArrayRemoveStatement":
+        return this.arrayRemove(statement);
+      case "ObjectSetStatement":
+        return this.objectSet(statement);
       case "ExpressionStatement":
         return this.expressionStatement(statement);
     }
@@ -82,20 +96,21 @@ class Emitter {
 
   private variableDeclaration(statement: VariableDeclaration): string {
     const value = statement.value ? this.expression(statement.value) : "undefined";
-    return this.line(`let ${statement.name} = ${value};`);
+    return [this.sourceLine(statement.line), this.line(`let ${statement.name} = ${value};`)].join("\n");
   }
 
   private assignment(statement: AssignmentStatement): string {
-    return this.line(`${statement.name} = ${this.expression(statement.value)};`);
+    return [this.sourceLine(statement.line), this.line(`${statement.name} = ${this.expression(statement.value)};`)].join("\n");
   }
 
   private print(statement: PrintStatement): string {
-    return this.line(`__consulting.print(${this.expression(statement.value)});`);
+    return [this.sourceLine(statement.line), this.line(`__consulting.print(${this.expression(statement.value)});`)].join("\n");
   }
 
   private functionDeclaration(statement: FunctionDeclaration): string {
     const name = this.functionNames.get(statement.name) ?? this.safeFunctionName(statement.name);
     const lines = [
+      this.sourceLine(statement.line),
       this.line(`function ${name}(${statement.params.join(", ")}) {`),
       this.withIndent(() => [
         this.line(`__consulting.checkArgs(arguments.length, ${statement.params.length});`),
@@ -107,16 +122,16 @@ class Emitter {
   }
 
   private returnStatement(statement: ReturnStatement): string {
-    return this.line(`return ${statement.value ? this.expression(statement.value) : "undefined"};`);
+    return [this.sourceLine(statement.line), this.line(`return ${statement.value ? this.expression(statement.value) : "undefined"};`)].join("\n");
   }
 
   private ifStatement(statement: IfStatement): string {
-    const lines: string[] = [];
+    const lines: string[] = [this.sourceLine(statement.line)];
     statement.branches.forEach((branch, index) => {
       if (index === 0) {
-        lines.push(this.line(`if (${this.expression(branch.condition!)}) {`));
+        lines.push(this.line(`if (__consulting.truthy(${this.expression(branch.condition!)}, ${branch.line})) {`));
       } else if (branch.condition) {
-        lines.push(this.line(`else if (${this.expression(branch.condition)}) {`));
+        lines.push(this.line(`else if (__consulting.truthy(${this.expression(branch.condition)}, ${branch.line})) {`));
       } else {
         lines.push(this.line("else {"));
       }
@@ -131,11 +146,12 @@ class Emitter {
     const from = `__from_${guard}`;
     const to = `__to_${guard}`;
     return [
+      this.sourceLine(statement.line),
       this.line("{"),
       ...this.withIndent(() => [
         this.line(`let ${guard} = 0;`),
-        this.line(`const ${from} = ${this.expression(statement.from)};`),
-        this.line(`const ${to} = ${this.expression(statement.to)};`),
+        this.line(`const ${from} = __consulting.number(${this.expression(statement.from)}, ${statement.line});`),
+        this.line(`const ${to} = __consulting.number(${this.expression(statement.to)}, ${statement.line});`),
         this.line(`const __step_${guard} = ${from} <= ${to} ? 1 : -1;`),
         this.line(
           `for (let ${statement.iterator} = ${from}; __step_${guard} > 0 ? ${statement.iterator} <= ${to} : ${statement.iterator} >= ${to}; ${statement.iterator} += __step_${guard}) {`,
@@ -153,10 +169,11 @@ class Emitter {
   private whileStatement(statement: WhileStatement): string {
     const guard = this.nextLoopGuard();
     return [
+      this.sourceLine(statement.line),
       this.line("{"),
       ...this.withIndent(() => [
         this.line(`let ${guard} = 0;`),
-        this.line(`while (!(${this.expression(statement.until)})) {`),
+        this.line(`while (!__consulting.truthy(${this.expression(statement.until)}, ${statement.line})) {`),
         ...this.withIndent(() => [
           this.line(`__consulting.guard(++${guard});`),
           ...statement.body.map((child) => this.statement(child)),
@@ -168,11 +185,23 @@ class Emitter {
   }
 
   private arrayPush(statement: ArrayPushStatement): string {
-    return this.line(`__consulting.addToPipeline(${this.expression(statement.array)}, ${this.expression(statement.value)});`);
+    return [this.sourceLine(statement.line), this.line(`__consulting.addToPipeline(${this.expression(statement.array)}, ${this.expression(statement.value)}, ${statement.line});`)].join("\n");
+  }
+
+  private arraySet(statement: ArraySetStatement): string {
+    return [this.sourceLine(statement.line), this.line(`__consulting.setStakeholder(${this.expression(statement.array)}, ${this.expression(statement.index)}, ${this.expression(statement.value)}, ${statement.line});`)].join("\n");
+  }
+
+  private arrayRemove(statement: ArrayRemoveStatement): string {
+    return [this.sourceLine(statement.line), this.line(`__consulting.removeFromPipeline(${this.expression(statement.array)}, ${this.expression(statement.index)}, ${statement.line});`)].join("\n");
+  }
+
+  private objectSet(statement: ObjectSetStatement): string {
+    return [this.sourceLine(statement.line), this.line(`__consulting.setBriefing(${this.expression(statement.object)}, ${this.expression(statement.key)}, ${this.expression(statement.value)}, ${statement.line});`)].join("\n");
   }
 
   private expressionStatement(statement: ExpressionStatement): string {
-    return this.line(`${this.expression(statement.expression)};`);
+    return [this.sourceLine(statement.line), this.line(`${this.expression(statement.expression)};`)].join("\n");
   }
 
   private expression(expression: Expression): string {
@@ -193,6 +222,16 @@ class Emitter {
         return this.arrayLength(expression);
       case "ArrayIndexExpression":
         return this.arrayIndex(expression);
+      case "ArrayMapExpression":
+        return this.arrayMap(expression);
+      case "ArrayFilterExpression":
+        return this.arrayFilter(expression);
+      case "ArraySortExpression":
+        return this.arraySort(expression);
+      case "ObjectLiteralExpression":
+        return this.objectLiteral(expression);
+      case "ObjectAccessExpression":
+        return this.objectAccess(expression);
     }
   }
 
@@ -205,15 +244,36 @@ class Emitter {
   }
 
   private unary(expression: UnaryExpression): string {
-    return `(!${this.expression(expression.argument)})`;
+    return `__consulting.not(${this.expression(expression.argument)}, ${expression.line})`;
   }
 
   private binary(expression: BinaryExpression): string {
+    if (expression.operator === "+") {
+      return `__consulting.add(${this.expression(expression.left)}, ${this.expression(expression.right)}, ${expression.line})`;
+    }
+    if (expression.operator === "-") {
+      return `__consulting.subtract(${this.expression(expression.left)}, ${this.expression(expression.right)}, ${expression.line})`;
+    }
+    if (expression.operator === "*") {
+      return `__consulting.multiply(${this.expression(expression.left)}, ${this.expression(expression.right)}, ${expression.line})`;
+    }
     if (expression.operator === "/") {
-      return `__consulting.divide(${this.expression(expression.left)}, ${this.expression(expression.right)})`;
+      return `__consulting.divide(${this.expression(expression.left)}, ${this.expression(expression.right)}, ${expression.line})`;
     }
     if (expression.operator === "%") {
-      return `__consulting.modulo(${this.expression(expression.left)}, ${this.expression(expression.right)})`;
+      return `__consulting.modulo(${this.expression(expression.left)}, ${this.expression(expression.right)}, ${expression.line})`;
+    }
+    if (expression.operator === "<" || expression.operator === ">") {
+      return `__consulting.compare(${JSON.stringify(expression.operator)}, ${this.expression(expression.left)}, ${this.expression(expression.right)}, ${expression.line})`;
+    }
+    if (expression.operator === "==" || expression.operator === "!=") {
+      return `__consulting.equal(${expression.operator === "!="}, ${this.expression(expression.left)}, ${this.expression(expression.right)}, ${expression.line})`;
+    }
+    if (expression.operator === "&&") {
+      return `__consulting.and(${this.expression(expression.left)}, ${this.expression(expression.right)}, ${expression.line})`;
+    }
+    if (expression.operator === "||") {
+      return `__consulting.or(${this.expression(expression.left)}, ${this.expression(expression.right)}, ${expression.line})`;
     }
     return `(${this.expression(expression.left)} ${expression.operator} ${this.expression(expression.right)})`;
   }
@@ -228,11 +288,38 @@ class Emitter {
   }
 
   private arrayLength(expression: ArrayLengthExpression): string {
-    return `__consulting.headcount(${this.expression(expression.array)})`;
+    return `__consulting.headcount(${this.expression(expression.array)}, ${expression.line})`;
   }
 
   private arrayIndex(expression: ArrayIndexExpression): string {
-    return `__consulting.stakeholder(${this.expression(expression.array)}, ${this.expression(expression.index)})`;
+    return `__consulting.stakeholder(${this.expression(expression.array)}, ${this.expression(expression.index)}, ${expression.line})`;
+  }
+
+  private arrayMap(expression: ArrayMapExpression): string {
+    return `__consulting.mapPipeline(${this.expression(expression.array)}, ${this.functionReference(expression.mapper)}, ${expression.line})`;
+  }
+
+  private arrayFilter(expression: ArrayFilterExpression): string {
+    return `__consulting.filterPipeline(${this.expression(expression.array)}, ${this.functionReference(expression.predicate)}, ${expression.line})`;
+  }
+
+  private arraySort(expression: ArraySortExpression): string {
+    return `__consulting.sortPipeline(${this.expression(expression.array)}, ${expression.line})`;
+  }
+
+  private objectLiteral(expression: ObjectLiteralExpression): string {
+    const properties = expression.properties.map((property) => {
+      return `${JSON.stringify(property.key)}: ${this.expression(property.value)}`;
+    });
+    return `__consulting.brief({ ${properties.join(", ")} }, ${expression.line})`;
+  }
+
+  private objectAccess(expression: ObjectAccessExpression): string {
+    return `__consulting.briefing(${this.expression(expression.object)}, ${this.expression(expression.key)}, ${expression.line})`;
+  }
+
+  private sourceLine(line: number): string {
+    return this.line(`// deck line ${line}`);
   }
 
   private line(text: string): string {
@@ -255,5 +342,9 @@ class Emitter {
 
   private safeFunctionName(name: string): string {
     return `__fn_${name.replace(/[^A-Za-z0-9_]/g, "_")}`;
+  }
+
+  private functionReference(name: string): string {
+    return this.functionNames.get(name) ?? this.safeFunctionName(name);
   }
 }

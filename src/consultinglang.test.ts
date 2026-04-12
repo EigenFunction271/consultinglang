@@ -21,6 +21,14 @@ describe("lexer", () => {
     assert.equal(tokens.some((token) => token.value === "going forward if"), true);
     assert.equal(tokens.some((token) => token.value === "ignore"), false);
   });
+
+  it("keeps consultant comments inside strings", () => {
+    const result = run(`kick off
+      socialise "This keeps // per my last email: the phrase"
+      close the loop`);
+
+    assert.deepEqual(result.output, ["This keeps // per my last email: the phrase"]);
+  });
 });
 
 describe("parser", () => {
@@ -78,6 +86,28 @@ describe("runtime", () => {
     assert.deepEqual(result.output, ["3", "Bob", "1", "middle", "3"]);
   });
 
+  it("handles descending loops", () => {
+    const result = run(`kick off
+      loop back on i from 3 to 1
+        socialise i
+      end of day
+      close the loop`);
+
+    assert.deepEqual(result.output, ["3", "2", "1"]);
+  });
+
+  it("exits circle back until immediately when already aligned", () => {
+    const result = run(`kick off
+      align on done is a key deliverable of greenlit
+      circle back until done
+        socialise "should not print"
+      end of day
+      socialise "done"
+      close the loop`);
+
+    assert.deepEqual(result.output, ["done"]);
+  });
+
   it("detects division by zero", () => {
     assert.throws(
       () => run(`kick off
@@ -97,6 +127,76 @@ describe("runtime", () => {
     );
   });
 
+  it("supports array removal, indexed assignment, map, filter, and sort", () => {
+    const result = run(`kick off
+      synergize double with x
+        take this offline x * 2
+      end of day
+
+      synergize is big with x
+        take this offline x > 5
+      end of day
+
+      align on numbers is a key deliverable of pipeline 3, 1, 4, 2
+      stakeholder 1 of numbers is a key deliverable of 6
+      remove from pipeline numbers 2
+
+      align on doubled is a key deliverable of map pipeline numbers with double
+      align on big is a key deliverable of filter pipeline doubled with is big
+      align on sorted is a key deliverable of sort pipeline big
+
+      socialise stakeholder 0 of sorted
+      socialise stakeholder 1 of sorted
+      close the loop`);
+
+    assert.deepEqual(result.output, ["6", "12"]);
+  });
+
+  it("supports object literals, lookup, and assignment", () => {
+    const result = run(`kick off
+      align on plan is a key deliverable of brief "owner": "Ada", score: 5
+      socialise briefing "owner" of plan
+      briefing "owner" of plan is a key deliverable of "Grace"
+      socialise briefing "owner" of plan
+      socialise briefing "score" of plan
+      close the loop`);
+
+    assert.deepEqual(result.output, ["Ada", "Grace", "5"]);
+  });
+
+  it("rejects missing object keys", () => {
+    assert.throws(
+      () => run(`kick off
+        align on plan is a key deliverable of brief owner: "Ada"
+        socialise briefing "budget" of plan
+        close the loop`),
+      /budget hasn't been onboarded yet/,
+    );
+  });
+
+  it("rejects map and filter callbacks with the wrong arity", () => {
+    assert.throws(
+      () => run(`kick off
+        synergize bad mapper with a, b
+          take this offline a
+        end of day
+        align on numbers is a key deliverable of pipeline 1, 2
+        socialise headcount of map pipeline numbers with bad mapper
+        close the loop`),
+      /requires more stakeholders/,
+    );
+  });
+
+  it("rejects sorting mixed pipelines", () => {
+    assert.throws(
+      () => run(`kick off
+        align on mixed is a key deliverable of pipeline 1, "two"
+        socialise headcount of sort pipeline mixed
+        close the loop`),
+      /These deliverables are not aligned/,
+    );
+  });
+
   it("detects wrong argument counts", () => {
     assert.throws(
       () => run(`kick off
@@ -106,6 +206,54 @@ describe("runtime", () => {
         socialise leverage add numbers with 1
         close the loop`),
       /requires more stakeholders/,
+    );
+  });
+
+  it("rejects assignment before declaration", () => {
+    assert.throws(
+      () => run(`kick off
+        revenue is a key deliverable of 10
+        close the loop`),
+      /revenue hasn't been onboarded yet/,
+    );
+  });
+
+  it("rejects redeclaration in the same scope", () => {
+    assert.throws(
+      () => run(`kick off
+        align on revenue is a key deliverable of 10
+        align on revenue is a key deliverable of 20
+        close the loop`),
+      /revenue is already aligned/,
+    );
+  });
+
+  it("rejects non-boolean conditions", () => {
+    assert.throws(
+      () => run(`kick off
+        going forward if 1
+          socialise "no"
+        end of day
+        close the loop`),
+      /These deliverables are not aligned/,
+    );
+  });
+
+  it("rejects arithmetic on strings", () => {
+    assert.throws(
+      () => run(`kick off
+        socialise "1" + 2
+        close the loop`),
+      /These deliverables are not aligned/,
+    );
+  });
+
+  it("rejects unknown function calls", () => {
+    assert.throws(
+      () => run(`kick off
+        socialise leverage missing synergy with 1
+        close the loop`),
+      /missing synergy hasn't been onboarded yet/,
     );
   });
 
@@ -133,6 +281,7 @@ describe("runtime", () => {
       close the loop`);
 
     assert.match(js, /__consulting\.modulo/);
+    assert.match(js, /deck line/);
   });
 });
 
@@ -151,5 +300,23 @@ describe("cli", () => {
     });
 
     assert.equal(output.trim(), "This deck is aligned.");
+  });
+
+  it("runs the expanded example decks", () => {
+    for (const deck of [
+      "fizzbuzz.deck",
+      "fibonacci.deck",
+      "strategy.deck",
+      "performance-review.deck",
+      "offsite.deck",
+      "quarterly-planning.deck",
+      "data-room.deck",
+    ]) {
+      const output = execFileSync(process.execPath, [cli, "run", join(projectRoot, "examples", deck)], {
+        encoding: "utf8",
+      });
+
+      assert.notEqual(output.trim(), "");
+    }
   });
 });
