@@ -1,0 +1,15 @@
+kick off
+
+  loop back on i from 1 to 15
+    going forward if i % 15 == 0
+      socialise "FizzBuzz"
+    pivoting if i % 3 == 0
+      socialise "Fizz"
+    pivoting if i % 5 == 0
+      socialise "Buzz"
+    that said
+      socialise i
+    end of day
+  end of day
+
+close the loop

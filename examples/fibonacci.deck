@@ -1,0 +1,22 @@
+kick off
+
+  synergize fibonacci with n
+    align on a is a key deliverable of 0
+    align on b is a key deliverable of 1
+    align on count is a key deliverable of 0
+
+    circle back until count == n
+      align on next is a key deliverable of a + b
+      a is a key deliverable of b
+      b is a key deliverable of next
+      count is a key deliverable of count + 1
+    end of day
+
+    take this offline a
+  end of day
+
+  loop back on i from 0 to 8
+    socialise leverage fibonacci with i
+  end of day
+
+close the loop

@@ -1,0 +1,46 @@
+{
+  "name": "consultinglang",
+  "version": "0.1.0",
+  "description": "A joke programming language for corporate consultants and upper management.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "consultinglang": "./dist/cli.js",
+    "deck": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.test.*",
+    "examples",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build && node --test dist/**/*.test.js",
+    "prepack": "npm run build",
+    "start": "node dist/cli.js"
+  },
+  "keywords": [
+    "language",
+    "compiler",
+    "transpiler",
+    "joke",
+    "consulting"
+  ],
+  "author": "eigenfunction",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}
