@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="ConsultingLang turns stakeholder vocabulary into executable .deck files."
+    />
+    <title>ConsultingLang | Ship the Deck</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="#top" aria-label="ConsultingLang home">
+        <span class="brand-mark">Q4</span>
+        <span>ConsultingLang</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#playground">Playground</a>
+        <a href="#vocabulary">Vocabulary</a>
+        <a href="https://github.com/EigenFunction271/consultinglang" rel="noreferrer">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <img
+          class="hero-image"
+          src="https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1800&q=80"
+          alt="A bright corporate meeting room with people gathered around a table"
+        />
+        <div class="hero-shade"></div>
+        <div class="hero-grid" aria-hidden="true"></div>
+        <div class="hero-copy">
+          <p class="eyebrow">Enterprise-grade stakeholder theatre</p>
+          <h1 id="hero-title">Turn boardroom synergy into executable value.</h1>
+          <p class="hero-lede">
+            Write `.deck` files with phrases like `kick off`, `socialise`, and
+            `take this offline`. The compiler handles the operational excellence.
+          </p>
+          <div class="hero-actions" aria-label="Primary actions">
+            <a class="button primary" href="#playground">Run a Deck</a>
+            <a class="button secondary" href="https://github.com/EigenFunction271/consultinglang" rel="noreferrer">
+              GitHub Repo
+            </a>
+          </div>
+          <div class="ticker" aria-label="ConsultingLang metrics">
+            <span>27 tests aligned</span>
+            <span>10000 loop cycles before leadership escalation</span>
+            <span>0 bandwidth divided</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="playground-section" id="playground" aria-labelledby="playground-title">
+        <div class="section-heading">
+          <p class="eyebrow">Interactive deck room</p>
+          <h2 id="playground-title">Run the language before the meeting ends.</h2>
+        </div>
+
+        <div class="playground-shell">
+          <div class="editor-panel" aria-label="Deck editor">
+            <div class="panel-toolbar">
+              <span class="toolbar-title">strategy.deck</span>
+              <div class="toolbar-actions">
+                <button class="mini-button" type="button" data-example="hello">Hello</button>
+                <button class="mini-button" type="button" data-example="fizzbuzz">FizzBuzz</button>
+                <button class="mini-button" type="button" data-example="data">Data Room</button>
+              </div>
+            </div>
+            <textarea id="deck-input" spellcheck="false" aria-label="ConsultingLang deck editor"></textarea>
+          </div>
+
+          <div class="output-panel" aria-live="polite" aria-label="Execution output">
+            <div class="panel-toolbar">
+              <span class="toolbar-title">stakeholder_output.txt</span>
+              <button class="button run-button" type="button" id="run-button">Socialise</button>
+            </div>
+            <pre id="deck-output">Awaiting executive alignment...</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="meme-band" aria-labelledby="meme-title">
+        <div class="meme-copy">
+          <p class="eyebrow">Governance, but funny</p>
+          <h2 id="meme-title">Errors that could have been an email.</h2>
+          <p>
+            Missing kickoff? Undeclared stakeholder? Infinite loop? Expect direct,
+            actionable feedback with just enough boardroom energy to pass procurement.
+          </p>
+        </div>
+        <img
+          src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1200&q=80"
+          alt="People reviewing charts and notes in a collaborative office session"
+        />
+      </section>
+
+      <section class="vocabulary" id="vocabulary" aria-labelledby="vocabulary-title">
+        <div class="section-heading">
+          <p class="eyebrow">Strategic vocabulary</p>
+          <h2 id="vocabulary-title">Corporate words, actual control flow.</h2>
+        </div>
+        <div class="vocab-grid">
+          <article>
+            <span>Program</span>
+            <code>kick off</code>
+            <code>close the loop</code>
+          </article>
+          <article>
+            <span>Variables</span>
+            <code>align on revenue</code>
+            <code>is a key deliverable of</code>
+          </article>
+          <article>
+            <span>Output</span>
+            <code>socialise "Hello"</code>
+          </article>
+          <article>
+            <span>Functions</span>
+            <code>synergize name with x</code>
+            <code>take this offline x</code>
+          </article>
+          <article>
+            <span>Decisions</span>
+            <code>going forward if</code>
+            <code>pivoting if</code>
+            <code>that said</code>
+          </article>
+          <article>
+            <span>Collections</span>
+            <code>pipeline 1, 2, 3</code>
+            <code>brief owner: "Ada"</code>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>ConsultingLang is MIT licensed. Please circle back responsibly.</p>
+      <a href="https://github.com/EigenFunction271/consultinglang" rel="noreferrer">
+        Review the repo
+      </a>
+    </footer>
+
+    <script type="module" src="/playground.js"></script>
+  </body>
+</html>
