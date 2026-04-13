@@ -25,7 +25,14 @@ Hello, World.
 After publishing, the public command shape is:
 
 ```bash
-npx consultinglang run examples/hello.deck
+npm install -g alangment
+alangment run examples/hello.deck
+```
+
+You can also run without a global install:
+
+```bash
+npx alangment run examples/hello.deck
 ```
 
 ## Transpile A Deck

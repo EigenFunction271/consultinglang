@@ -1,6 +1,6 @@
 # CLI Reference
 
-The CLI entrypoint is `consultinglang`.
+The primary CLI entrypoint is `alangment`. The package also exposes `consultinglang` and `deck` aliases.
 
 During local development, use:
 
@@ -11,7 +11,14 @@ node dist/cli.js <command> <file.deck>
 After publishing, use:
 
 ```bash
-npx consultinglang <command> <file.deck>
+npm install -g alangment
+alangment <command> <file.deck>
+```
+
+Or run through `npx`:
+
+```bash
+npx alangment <command> <file.deck>
 ```
 
 ## `run`

@@ -4,23 +4,128 @@ ConsultingLang is a full-stack, cross-functional programming paradigm engineered
 
 Going forward, your code will not merely execute. It will transform.
 
-## Onboarding
+## Setup
+
+### Prerequisites
+
+- Node.js 20 or newer
+- npm 10 or newer
+- Git, if you are cloning the repository locally
+
+Check your local tooling:
+
+```bash
+node --version
+npm --version
+git --version
+```
+
+### Clone The Repository
+
+```bash
+git clone https://github.com/EigenFunction271/consultinglang.git
+cd consultinglang
+```
+
+### Install Dependencies
+
+Use `npm install` for day-to-day local development:
 
 ```bash
 npm install
+```
+
+For CI-style clean installs, use:
+
+```bash
+npm ci
+```
+
+If npm reports cache ownership issues from an older npm install, use a temporary cache for one-off package checks:
+
+```bash
+npm_config_cache=/tmp/alangment-npm-cache npm pack --dry-run
+```
+
+### Build
+
+Compile TypeScript into `dist/`:
+
+```bash
 npm run build
+```
+
+### Test
+
+Run the full test suite:
+
+```bash
 npm test
 ```
 
-## Value Delivery
+The test command builds first, then runs Node's built-in test runner against the compiled files in `dist/`.
+
+### Run Locally
+
+After building, run the CLI directly:
 
 ```bash
-npx consultinglang run examples/hello.deck
-npx consultinglang transpile examples/fizzbuzz.deck
-npx consultinglang audit examples/fibonacci.deck
+node dist/cli.js run examples/hello.deck
 ```
 
-Local stakeholders may also leverage:
+Expected output:
+
+```text
+Hello, World.
+```
+
+Audit a deck without running it:
+
+```bash
+node dist/cli.js audit examples/fibonacci.deck
+```
+
+Transpile a deck to JavaScript:
+
+```bash
+node dist/cli.js transpile examples/fizzbuzz.deck
+```
+
+### Package Check
+
+Before publishing, verify the package contents:
+
+```bash
+npm pack --dry-run
+```
+
+The package should include `dist/`, `examples/`, `documentation/`, `LICENSE`, and `README.md`.
+
+## Value Delivery
+
+Install the published package globally:
+
+```bash
+npm install -g alangment
+```
+
+Then run:
+
+```bash
+alangment run examples/hello.deck
+alangment transpile examples/fizzbuzz.deck
+alangment audit examples/fibonacci.deck
+```
+
+Stakeholders can also use the package without a global install:
+
+```bash
+npx alangment run examples/hello.deck
+npx alangment transpile examples/fizzbuzz.deck
+npx alangment audit examples/fibonacci.deck
+```
+
+Local stakeholders may also continue to leverage:
 
 ```bash
 node dist/cli.js run examples/hello.deck

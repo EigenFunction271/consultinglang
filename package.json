@@ -1,5 +1,5 @@
 {
-  "name": "consultinglang",
+  "name": "alangment",
   "version": "0.1.0",
   "description": "A joke programming language for corporate consultants and upper management.",
   "homepage": "https://github.com/EigenFunction271/consultinglang#readme",
@@ -20,6 +20,7 @@
     }
   },
   "bin": {
+    "alangment": "./dist/cli.js",
     "consultinglang": "./dist/cli.js",
     "deck": "./dist/cli.js"
   },
