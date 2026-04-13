@@ -212,17 +212,24 @@ function createRuntimeHelpers(output: string[]) {
     },
 
     briefing(value: unknown, key: unknown, line?: number): unknown {
-      if (!isRecord(value) || typeof key !== "string") {
+      if (!isRecord(value) || !isObjectKey(key)) {
         throw new ConsultingLangError(errors.typeError, line);
       }
       if (!Object.hasOwn(value, key)) {
-        throw new ConsultingLangError(errors.undefinedVariable(key), line);
+        throw new ConsultingLangError(errors.undefinedVariable(String(key)), line);
       }
       return value[key];
     },
 
+    hasBriefing(value: unknown, key: unknown, line?: number): boolean {
+      if (!isRecord(value) || !isObjectKey(key)) {
+        throw new ConsultingLangError(errors.typeError, line);
+      }
+      return Object.hasOwn(value, key);
+    },
+
     setBriefing(value: unknown, key: unknown, item: unknown, line?: number): void {
-      if (!isRecord(value) || typeof key !== "string") {
+      if (!isRecord(value) || !isObjectKey(key)) {
         throw new ConsultingLangError(errors.typeError, line);
       }
       value[key] = item;
@@ -256,4 +263,8 @@ function runtimeType(value: unknown): string {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isObjectKey(value: unknown): value is string | number {
+  return typeof value === "string" || typeof value === "number";
 }

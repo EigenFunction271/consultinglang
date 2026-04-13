@@ -16,6 +16,7 @@ import type {
   FunctionDeclaration,
   IfStatement,
   ObjectAccessExpression,
+  ObjectHasExpression,
   ObjectLiteralExpression,
   ObjectSetStatement,
   Program,
@@ -212,7 +213,7 @@ class Analyzer {
 
   private objectSet(statement: ObjectSetStatement, scope: Scope): void {
     this.requireType(this.expression(statement.object, scope), "object", statement.line);
-    this.requireType(this.expression(statement.key, scope), "string", statement.line);
+    this.requireKeyType(this.expression(statement.key, scope), statement.line);
     this.expression(statement.value, scope);
   }
 
@@ -248,6 +249,8 @@ class Analyzer {
         return this.objectLiteral(expression, scope);
       case "ObjectAccessExpression":
         return this.objectAccess(expression, scope);
+      case "ObjectHasExpression":
+        return this.objectHas(expression, scope);
     }
   }
 
@@ -347,12 +350,24 @@ class Analyzer {
 
   private objectAccess(expression: ObjectAccessExpression, scope: Scope): ValueType {
     this.requireType(this.expression(expression.object, scope), "object", expression.line);
-    this.requireType(this.expression(expression.key, scope), "string", expression.line);
+    this.requireKeyType(this.expression(expression.key, scope), expression.line);
     return "unknown";
+  }
+
+  private objectHas(expression: ObjectHasExpression, scope: Scope): ValueType {
+    this.requireType(this.expression(expression.object, scope), "object", expression.line);
+    this.requireKeyType(this.expression(expression.key, scope), expression.line);
+    return "boolean";
   }
 
   private requireType(actual: ValueType, expected: ValueType, line: number): void {
     if (actual !== "unknown" && actual !== expected) {
+      throw new ConsultingLangError(errors.typeError, line);
+    }
+  }
+
+  private requireKeyType(actual: ValueType, line: number): void {
+    if (actual !== "unknown" && actual !== "string" && actual !== "number") {
       throw new ConsultingLangError(errors.typeError, line);
     }
   }

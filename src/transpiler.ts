@@ -19,6 +19,7 @@ import type {
   IfStatement,
   LiteralExpression,
   ObjectAccessExpression,
+  ObjectHasExpression,
   ObjectLiteralExpression,
   ObjectSetStatement,
   PrintStatement,
@@ -232,6 +233,8 @@ class Emitter {
         return this.objectLiteral(expression);
       case "ObjectAccessExpression":
         return this.objectAccess(expression);
+      case "ObjectHasExpression":
+        return this.objectHas(expression);
     }
   }
 
@@ -316,6 +319,10 @@ class Emitter {
 
   private objectAccess(expression: ObjectAccessExpression): string {
     return `__consulting.briefing(${this.expression(expression.object)}, ${this.expression(expression.key)}, ${expression.line})`;
+  }
+
+  private objectHas(expression: ObjectHasExpression): string {
+    return `__consulting.hasBriefing(${this.expression(expression.object)}, ${this.expression(expression.key)}, ${expression.line})`;
   }
 
   private sourceLine(line: number): string {

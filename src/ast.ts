@@ -129,7 +129,8 @@ export type Expression =
   | ArrayFilterExpression
   | ArraySortExpression
   | ObjectLiteralExpression
-  | ObjectAccessExpression;
+  | ObjectAccessExpression
+  | ObjectHasExpression;
 
 export interface LiteralExpression {
   kind: "LiteralExpression";
@@ -217,6 +218,13 @@ export interface ObjectLiteralExpression {
 
 export interface ObjectAccessExpression {
   kind: "ObjectAccessExpression";
+  line: number;
+  key: Expression;
+  object: Expression;
+}
+
+export interface ObjectHasExpression {
+  kind: "ObjectHasExpression";
   line: number;
   key: Expression;
   object: Expression;

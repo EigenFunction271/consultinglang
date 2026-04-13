@@ -254,6 +254,7 @@ h2 {
 }
 
 .playground-section,
+.leetcode-band,
 .vocabulary {
   padding: 76px clamp(18px, 5vw, 70px);
 }
@@ -334,6 +335,54 @@ pre {
 
 .output-panel pre.is-error {
   color: #ffb3b3;
+}
+
+.leetcode-band {
+  border-top: 4px solid var(--line);
+  background:
+    linear-gradient(90deg, rgba(246, 201, 69, 0.35), transparent),
+    var(--paper);
+}
+
+.leetcode-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.48fr) minmax(0, 1fr);
+  gap: 22px;
+  align-items: stretch;
+}
+
+.leetcode-copy {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  border: 4px solid var(--line);
+  background: var(--white);
+  box-shadow: 5px 5px 0 var(--line);
+  padding: 20px;
+}
+
+.leetcode-copy p {
+  margin: 0;
+  color: #202722;
+  font-size: 1.05rem;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.code-sample {
+  min-height: auto;
+  height: auto;
+  border: 4px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.code-sample code {
+  display: inline;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  font: inherit;
 }
 
 .meme-band {
@@ -427,6 +476,7 @@ code {
 @media (max-width: 980px) {
   .playground-shell,
   .meme-band,
+  .leetcode-grid,
   .vocab-grid {
     grid-template-columns: 1fr;
   }

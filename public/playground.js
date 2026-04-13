@@ -19,6 +19,36 @@ close the loop`,
   end of day
 
 close the loop`,
+  twosum: `kick off
+
+  synergize two sum with numbers, target
+    align on seen is a key deliverable of brief
+    align on answer is a key deliverable of pipeline
+    align on last is a key deliverable of headcount of numbers
+
+    loop back on i from 0 to last - 1
+      align on value is a key deliverable of stakeholder i of numbers
+      align on needed is a key deliverable of target - value
+
+      going forward if has briefing needed of seen
+        add to pipeline answer briefing needed of seen
+        add to pipeline answer i
+        take this offline answer
+      end of day
+
+      briefing value of seen is a key deliverable of i
+    end of day
+
+    take this offline answer
+  end of day
+
+  align on nums is a key deliverable of pipeline 2, 7, 11, 15
+  align on result is a key deliverable of leverage two sum with nums, 9
+
+  socialise stakeholder 0 of result
+  socialise stakeholder 1 of result
+
+close the loop`,
   data: `kick off
 
   synergize double with n

@@ -388,8 +388,8 @@ export function parseExpression(input: string, line: number): Expression {
     };
   }
 
-  if (trimmed.startsWith("pipeline ")) {
-    const argText = trimmed.slice("pipeline ".length).trim();
+  if (trimmed === "pipeline" || trimmed.startsWith("pipeline ")) {
+    const argText = trimmed === "pipeline" ? "" : trimmed.slice("pipeline ".length).trim();
     return {
       kind: "ArrayLiteralExpression",
       line,
@@ -397,11 +397,11 @@ export function parseExpression(input: string, line: number): Expression {
     };
   }
 
-  if (trimmed.startsWith("brief ")) {
+  if (trimmed === "brief" || trimmed.startsWith("brief ")) {
     return {
       kind: "ObjectLiteralExpression",
       line,
-      properties: parseObjectProperties(trimmed.slice("brief ".length), line),
+      properties: parseObjectProperties(trimmed === "brief" ? "" : trimmed.slice("brief ".length), line),
     };
   }
 
@@ -446,6 +446,20 @@ export function parseExpression(input: string, line: number): Expression {
       kind: "ArrayLengthExpression",
       line,
       array: parseExpression(trimmed.slice("headcount of ".length), line),
+    };
+  }
+
+  if (trimmed.startsWith("has briefing ")) {
+    const rest = trimmed.slice("has briefing ".length);
+    const ofIndex = findTopLevelPhrase(rest, " of ");
+    if (ofIndex === -1) {
+      throw syntaxError(line);
+    }
+    return {
+      kind: "ObjectHasExpression",
+      line,
+      key: parseExpression(rest.slice(0, ofIndex), line),
+      object: parseExpression(rest.slice(ofIndex + " of ".length), line),
     };
   }
 

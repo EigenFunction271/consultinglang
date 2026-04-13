@@ -7,6 +7,7 @@ ConsultingLang supports arrays and object/dictionary/map values.
 Arrays are called pipelines.
 
 ```deck
+align on backlog is a key deliverable of pipeline
 align on team is a key deliverable of pipeline "Alice", "Bob"
 ```
 
@@ -96,6 +97,7 @@ Objects are called briefs.
 
 ```deck
 align on memo is a key deliverable of brief owner: "Ada", "status": "greenlit"
+align on seen is a key deliverable of brief
 ```
 
 Keys may be bare identifiers in literals:
@@ -110,10 +112,24 @@ Keys may also be quoted strings:
 brief "status": "greenlit"
 ```
 
+Runtime key expressions may be strings or numbers:
+
+```deck
+briefing 7 of seen is a key deliverable of 0
+```
+
 Read a key:
 
 ```deck
 socialise briefing "owner" of memo
+```
+
+Check whether a key exists:
+
+```deck
+going forward if has briefing "owner" of memo
+  socialise "Owner is in the room."
+end of day
 ```
 
 Assign a key:
@@ -124,6 +140,7 @@ briefing "status" of memo is a key deliverable of "socialised"
 
 Strict rules:
 
-- `briefing [key] of [object]` requires an object and a string key.
+- `briefing [key] of [object]` requires an object and a string or number key.
 - Reading a missing key is rejected.
+- `has briefing [key] of [object]` returns a boolean instead of reading the value.
 - Assigning a key creates or replaces that entry.

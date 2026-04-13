@@ -49,8 +49,8 @@ Supported values:
 - Strings: `"Hello"`
 - Booleans: `greenlit`, `deprioritised`
 - Null: `no bandwidth`
-- Arrays: `pipeline "Alice", "Bob"`
-- Objects, dictionaries, maps: `brief owner: "Ada", "status": "greenlit"`
+- Arrays: `pipeline`, `pipeline "Alice", "Bob"`
+- Objects, dictionaries, maps: `brief`, `brief owner: "Ada", "status": "greenlit"`
 
 ## Operators
 
